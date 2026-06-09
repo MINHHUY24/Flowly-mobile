@@ -1,10 +1,6 @@
 # Flowly Mobile
 
-![Flutter](https://img.shields.io/badge/Flutter-Mobile-blue.svg)
-![Dart](https://img.shields.io/badge/Dart-3.11+-0175C2.svg)
-![Express](https://img.shields.io/badge/Express-Backend-black.svg)
-![Supabase](https://img.shields.io/badge/Supabase-Auth%20%26%20Database-3ECF8E.svg)
-![Gemini](https://img.shields.io/badge/Gemini-AI%20Assistant-orange.svg)
+![Flutter](https://img.shields.io/badge/Flutter-Mobile-blue.svg) ![Dart](https://img.shields.io/badge/Dart-3.11+-0175C2.svg) ![Express](https://img.shields.io/badge/Express-Backend-black.svg) ![Supabase](https://img.shields.io/badge/Supabase-Auth%20%26%20Database-3ECF8E.svg) ![Gemini](https://img.shields.io/badge/Gemini-AI%20Assistant-orange.svg)
 
 Flowly là ứng dụng quản lý công việc và lịch trình được xây dựng bằng Flutter, đi kèm backend API Node.js/Express và Supabase cho xác thực, lưu trữ dữ liệu theo từng người dùng. Ứng dụng tập trung vào trải nghiệm mobile trước, có giao diện tối/sáng, hỗ trợ tablet và có Flowly Bot để tạo nhanh task hoặc lịch từ câu nhập tự nhiên.
 
@@ -129,13 +125,13 @@ SESSION_SECRET=your_session_secret
 
 Các biến môi trường backend:
 
-| Biến | Ý nghĩa |
-| --- | --- |
-| `PORT` | Port chạy Express API |
-| `SUPABASE_URL` | URL Supabase project |
-| `SUPABASE_PUBLISHABLE_KEY` | Public key của Supabase |
-| `GEMINI_API_KEY` | API key dùng cho Flowly Bot |
-| `SESSION_SECRET` | Secret dùng cho phiên hoặc cấu hình server |
+| Biến                       | Ý nghĩa                                    |
+| -------------------------- | ------------------------------------------ |
+| `PORT`                     | Port chạy Express API                      |
+| `SUPABASE_URL`             | URL Supabase project                       |
+| `SUPABASE_PUBLISHABLE_KEY` | Public key của Supabase                    |
+| `GEMINI_API_KEY`           | API key dùng cho Flowly Bot                |
+| `SESSION_SECRET`           | Secret dùng cho phiên hoặc cấu hình server |
 
 Chạy API:
 
@@ -304,3 +300,30 @@ dart format lib test
 ## Trạng thái dự án
 
 Flowly hiện tập trung vào bản mobile Android/iOS. Backend Express đóng vai trò API trung gian cho Supabase, ngày lễ và Flowly Bot.
+
+## Về tác giả
+
+Xin chào, mình là Ryan Lê.
+
+Mình phát triển Flowly Mobile như một bước tiến tiếp theo trong hành trình học tập và thực hành phát triển ứng dụng di động full-stack. Sau khi hoàn thiện phiên bản Web App, dự án này giúp mình tập trung nghiên cứu sâu hơn vào trải nghiệm di động (Mobile-First) và rèn luyện các kỹ năng như:
+
+- Thiết kế giao diện đa nền tảng (Android/iOS/Tablet) bằng Flutter.
+- Tổ chức kiến trúc mã nguồn Dart sạch sẽ, tối ưu hóa hiệu ứng chuyển trang động.
+- Quản lý trạng thái ứng dụng và tích hợp mượt mà với hệ thống đa ngôn ngữ (Localization).
+- Xây dựng và tối ưu hệ thống REST API trung gian bằng Node.js/Express.
+- Xử lý xác thực người dùng bảo mật cao và đồng bộ dữ liệu thời gian thực với Supabase Auth & Database.
+- Ứng dụng AI sinh thành (Google Gemini) để cải tiến trải nghiệm nhập liệu tự nhiên của người dùng trên thiết bị di động.
+- Quản lý quy trình build, debug trên các môi trường giả lập (Simulator/Emulator) và triển khai một sản phẩm di động hoàn chỉnh.
+
+Flowly Mobile là minh chứng cho quá trình tự học, tìm tòi và hiện thực hóa ý tưởng từ nền tảng Web sang thế giới Mobile App của mình, hướng tới việc xây dựng các giải pháp phần mềm tối ưu và thực tế.
+
+## Liên hệ
+
+- **GitHub:** [https://github.com/MINHHUY24](https://github.com/MINHHUY24)
+- **Email:** huyleminh93vvk@gmail.com
+
+Nếu bạn gặp bất kỳ lỗi nào trong quá trình cài đặt, chạy thử hoặc có ý tưởng đóng góp tính năng mới cho phiên bản di động, xin vui lòng tạo một Issue trong GitHub repository này.
+
+## License
+
+Dự án này được phát triển hoàn toàn cho mục đích học tập, nghiên cứu công nghệ và thực hành cá nhân.
