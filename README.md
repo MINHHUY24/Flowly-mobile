@@ -312,7 +312,6 @@ Mình phát triển Flowly Mobile như một bước tiến tiếp theo trong h�
 - Quản lý trạng thái ứng dụng và tích hợp mượt mà với hệ thống đa ngôn ngữ (Localization).
 - Xây dựng và tối ưu hệ thống REST API trung gian bằng Node.js/Express.
 - Xử lý xác thực người dùng bảo mật cao và đồng bộ dữ liệu thời gian thực với Supabase Auth & Database.
-- Ứng dụng AI sinh thành (Google Gemini) để cải tiến trải nghiệm nhập liệu tự nhiên của người dùng trên thiết bị di động.
 - Quản lý quy trình build, debug trên các môi trường giả lập (Simulator/Emulator) và triển khai một sản phẩm di động hoàn chỉnh.
 
 Flowly Mobile là minh chứng cho quá trình tự học, tìm tòi và hiện thực hóa ý tưởng từ nền tảng Web sang thế giới Mobile App của mình, hướng tới việc xây dựng các giải pháp phần mềm tối ưu và thực tế.
