@@ -3,7 +3,18 @@ function isValidTaskType(taskType) {
 }
 
 function isValidTagColor(tagColor) {
-  return ["orange", "red", "green"].includes(tagColor);
+  if (/^#[0-9a-fA-F]{6}$/.test(tagColor)) return true;
+
+  return [
+    "orange",
+    "red",
+    "green",
+    "blue",
+    "purple",
+    "cyan",
+    "yellow",
+    "gray",
+  ].includes(tagColor);
 }
 
 function isValidTaskStatus(status) {

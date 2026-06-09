@@ -1,7 +1,6 @@
 require("dotenv").config();
 
 const express = require("express");
-const path = require("path");
 
 const taskRoutes = require("./routes/taskRoutes");
 const scheduleRoutes = require("./routes/scheduleRoutes");
@@ -11,19 +10,6 @@ const { getHolidayMap } = require("./utils/holidays");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-const clientDistPath = path.join(__dirname, "../client/dist");
-const appBasePath = normalizeBasePath(process.env.APP_BASE_PATH || "/flowly");
-
-console.log("CORS FIX VERSION is running");
-
-function normalizeBasePath(value) {
-  const cleanPath = String(value || "")
-    .trim()
-    .replace(/^\/+|\/+$/g, "");
-
-  return cleanPath ? `/${cleanPath}` : "/";
-}
 
 /* =========================
    CORS
@@ -93,25 +79,6 @@ app.get("/api/holidays/:year", (req, res) => {
 app.use("/api/tasks", taskRoutes);
 app.use("/api/schedules", scheduleRoutes);
 app.use("/api/ai", aiRoutes);
-
-/* =========================
-   STATIC FRONTEND FALLBACK
-========================= */
-if (appBasePath !== "/") {
-  app.use(appBasePath, express.static(clientDistPath));
-}
-
-app.use(express.static(clientDistPath));
-
-app.get(/^\/(?!api).*/, (req, res) => {
-  res.sendFile(path.join(clientDistPath, "index.html"), (error) => {
-    if (error) {
-      return res
-        .status(404)
-        .send("React build not found. Run npm run build first.");
-    }
-  });
-});
 
 app.use((req, res) => {
   return res.status(404).json({

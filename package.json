@@ -1,33 +1,25 @@
 {
-  "name": "flowly-react",
+  "name": "flowly-mobile",
   "version": "1.0.0",
-  "description": "Flowly React + Express + Supabase",
+  "description": "Flowly Flutter mobile app with Express + Supabase API",
   "main": "server/index.js",
   "scripts": {
-    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
-    "dev:server": "nodemon server/index.js",
-    "dev:client": "vite --config client/vite.config.js --host 0.0.0.0",
-    "build": "vite build --config client/vite.config.js",
-    "preview": "vite preview --config client/vite.config.js --host 0.0.0.0",
+    "dev": "npm run dev:server",
+    "dev:server": "nodemon --watch server --watch .env server/index.js",
+    "dev:flutter": "cd mobile && flutter run",
+    "dev:mobile": "concurrently -k -n SERVER,FLUTTER -c blue,green \"npm run dev:server\" \"npm run dev:flutter\"",
     "start": "node server/index.js"
   },
   "dependencies": {
     "@google/genai": "^1.51.0",
     "@supabase/supabase-js": "^2.105.1",
+    "cors": "^2.8.6",
     "date-holidays": "^3.27.0",
     "dotenv": "^17.4.2",
-    "express": "^4.19.2",
-    "flag-icons": "^7.5.0",
-    "i18next": "^26.0.8",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5",
-    "react-i18next": "^17.0.6",
-    "react-router-dom": "^7.14.2"
+    "express": "^4.19.2"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^6.0.1",
     "concurrently": "^9.2.1",
-    "nodemon": "^3.1.4",
-    "vite": "^8.0.10"
+    "nodemon": "^3.1.4"
   }
 }

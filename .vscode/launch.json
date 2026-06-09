@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Flowly Mobile",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "mobile"
+    },
+    {
+      "name": "Flowly Mobile Android Emulator",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "mobile"
+    }
+  ]
+}

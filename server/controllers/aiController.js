@@ -46,6 +46,15 @@ function removeVietnameseTones(value) {
     .replace(/Đ/g, "D");
 }
 
+function normalizeCommonTypingMistakes(value) {
+  return String(value || "")
+    .replace(/\blcus\b/gi, "lúc")
+    .replace(/\blucs\b/gi, "lúc")
+    .replace(/\bngayf\b/gi, "ngày")
+    .replace(/\bnagyf\b/gi, "ngày")
+    .replace(/\bdid\b/gi, "đi");
+}
+
 function getPageContext(body) {
   const page = String(body.page || body.currentPage || body.context || "");
   const path = String(body.path || body.pathname || "");
@@ -273,7 +282,7 @@ function cleanupTitle(value, fallbackTitle) {
   const title = String(value || "")
     .replace(/\b(lúc|luc|at|vào lúc|vao luc)\s*\d{1,2}\s*(?:h|giờ|gio|:)?\s*\d{0,2}/gi, "")
     .replace(/\b\d{1,2}\s*(?:h|giờ|gio|:)\s*\d{0,2}\s*(?:-|đến|dến|den|tới|toi|to)\s*\d{1,2}\s*(?:h|giờ|gio|:)?\s*\d{0,2}/gi, "")
-    .replace(/\bngày\s*\d{1,2}[/-]\d{1,2}(?:[/-]\d{2,4})?/gi, "")
+    .replace(/\b(ngày|ngay)\s*\d{1,2}[/-]\d{1,2}(?:[/-]\d{2,4})?/gi, "")
     .replace(/\b(thứ|thu)\s*(hai|ba|tư|tu|năm|nam|sáu|sau|bảy|bay|\d)\b/gi, "")
     .replace(/\b(hôm nay|hom nay|ngày mai|ngay mai|today|tomorrow)\b/gi, "")
     .replace(/\b(và|va)?\s*(kéo dài|keo dai|lặp lại|lap lai|đến|den|tới|toi)\s+.*$/gi, "")
@@ -289,6 +298,7 @@ function deriveTitle(text, page) {
   const original = String(text || "").replace(/\s+/g, " ").trim();
   const patterns = [
     /(?:task|nhiệm vụ|nhiem vu)\s*(?:là|la|:)\s*(.+)$/i,
+    /(?:thêm|them)\s+(?:cho\s+)?(?:tôi|toi|mình|minh|em)?\s*(?:task|nhiệm vụ|nhiem vu)?\s*(?:là|la|:)?\s*(.+)$/i,
     /(?:tôi|toi|mình|minh|em)?\s*(?:muốn|muon)\s*(?:thêm|them)\s*(?:task|nhiệm vụ|nhiem vu)?\s*(?:là|la|:)?\s*(.+)$/i,
     /(?:tôi|toi|mình|minh|em)?\s*(?:có|co)\s+(.+?)(?=\s+(?:ngày|ngay|thứ|thu|lúc|luc|vào|vao|kéo|keo|\d{1,2}\s*(?:h|:))|$)/i,
     /(?:tôi|toi|mình|minh|em)?\s*(?:cần|can)\s+(.+?)(?=\s+(?:lúc|luc|ngày|ngay|vào|vao|\d{1,2}\s*(?:h|:))|$)/i,
@@ -319,21 +329,22 @@ function appendTimeToDescription(description, item) {
 }
 
 function parseRuleBasedCommand(message, page, today) {
+  const normalizedMessage = normalizeCommonTypingMistakes(message);
   const todayDate = dateKeyToLocalDate(today);
-  const parsedDate = parseDateFromText(message, todayDate) || todayDate;
+  const parsedDate = parseDateFromText(normalizedMessage, todayDate) || todayDate;
   const dateKey = getDateKeyLocal(parsedDate);
-  const timeRange = parseTimeRange(message);
-  const title = deriveTitle(message, page);
+  const timeRange = parseTimeRange(normalizedMessage);
+  const title = deriveTitle(normalizedMessage, page);
 
   if (page === "schedule") {
-    const repeatUntil = parseRepeatUntil(message, todayDate, parsedDate);
+    const repeatUntil = parseRepeatUntil(normalizedMessage, todayDate, parsedDate);
 
     return {
       type: "schedule",
       items: [
         {
           title,
-          description: String(message || "").trim(),
+          description: String(normalizedMessage || "").trim(),
           schedule_date: dateKey,
           start_time: timeRange?.start_time || "09:00:00",
           end_time: timeRange?.end_time || "10:00:00",
@@ -495,6 +506,7 @@ Trang hiện tại người dùng đang đứng: ${page}
 
 Nhiệm vụ của bạn:
 - Đọc câu tiếng Việt hoặc tiếng Anh của người dùng.
+- Người dùng có thể gõ không dấu hoặc sai nhẹ, ví dụ "lcus" = "lúc", "ngayf" = "ngày".
 - Trên trang home: luôn tạo type = "tasks" cho việc trong hôm nay hoặc ngày cụ thể. Nếu có giờ như "lúc 9h50", đưa giờ vào description, không dùng schedule.
 - Trên trang tasks: chỉ tạo type = "tasks", title là nội dung task chính, ngày mặc định là hôm nay nếu người dùng không nói ngày.
 - Trên trang schedule: tạo type = "schedule" cho lịch/học/hẹn có giờ. Nếu người dùng nói thứ trong tuần và "kéo dài đến tháng 6/tháng 7", trả repeat_type = "weekly" và repeat_until là ngày cuối của tháng cuối cùng được nhắc tới.
@@ -551,25 +563,31 @@ Câu người dùng:
 "${message.trim()}"
 `;
 
-    const ai = new GoogleGenAI({
-      apiKey: process.env.GEMINI_API_KEY,
-    });
+    let parsed = normalizeAiResult(fallbackResult, { page, today });
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-      },
-    });
+    try {
+      const ai = new GoogleGenAI({
+        apiKey: process.env.GEMINI_API_KEY,
+      });
 
-    let parsed = normalizeAiResult(safeJsonParse(response.text), {
-      page,
-      today,
-    });
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+        },
+      });
 
-    if (parsed.type === "unknown" || parsed.items.length === 0) {
-      parsed = normalizeAiResult(fallbackResult, { page, today });
+      const aiParsed = normalizeAiResult(safeJsonParse(response.text), {
+        page,
+        today,
+      });
+
+      if (aiParsed.type !== "unknown" && aiParsed.items.length > 0) {
+        parsed = aiParsed;
+      }
+    } catch (error) {
+      console.log("AI provider parse failed, using fallback:", error);
     }
 
     return res.json({
