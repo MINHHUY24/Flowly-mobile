@@ -277,7 +277,7 @@ class _TaskStatusFilterButton extends StatelessWidget {
                 style: TextStyle(
                   color: selected ? Colors.white : FlowlyColors.text,
                   fontSize: 15,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ),

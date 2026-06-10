@@ -183,7 +183,7 @@ class _LoginPageState extends State<LoginPage> {
                 style: TextButton.styleFrom(
                   foregroundColor: FlowlyColors.muted,
                   textStyle: TextStyle(
-                    fontSize: isTablet ? 22 : 14,
+                    fontSize: isTablet ? 20 : 16,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -194,7 +194,7 @@ class _LoginPageState extends State<LoginPage> {
                 style: TextButton.styleFrom(
                   foregroundColor: FlowlyColors.muted,
                   textStyle: TextStyle(
-                    fontSize: isTablet ? 22 : 14,
+                    fontSize: isTablet ? 20 : 16,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -836,7 +836,7 @@ class AuthPrimaryButton extends StatelessWidget {
             ),
             textStyle: TextStyle(
               fontSize: isTablet ? 24 : 18,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w600,
             ),
           ),
           onPressed: onPressed,
@@ -944,7 +944,7 @@ class FlowlyTextField extends StatelessWidget {
         style: TextStyle(
           color: FlowlyColors.text,
           fontSize: isTablet ? 24 : 16,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w500,
         ),
         decoration: InputDecoration(
           hintText: hint,
@@ -953,7 +953,7 @@ class FlowlyTextField extends StatelessWidget {
           hintStyle: TextStyle(
             color: FlowlyColors.muted.withValues(alpha: 0.72),
             fontSize: isTablet ? 24 : 16,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w500,
           ),
           prefixIcon: Icon(
             icon,
@@ -1014,10 +1014,10 @@ class SocialButton extends StatelessWidget {
     final targetWidth = isTablet ? 560.0 : 280.0;
     final height = isTablet ? 70.0 : 52.0;
     final horizontalPadding = isTablet ? 28.0 : 18.0;
-    final iconWidth = isTablet ? 44.0 : 28.0;
-    final iconGap = isTablet ? 24.0 : 14.0;
+    final iconWidth = isTablet ? 36.0 : 28.0;
+    final iconGap = isTablet ? 18.0 : 14.0;
     final radius = BorderRadius.circular(isTablet ? 22 : 18);
-    final fontSize = isTablet ? 22.0 : 15.5;
+    final fontSize = isTablet ? 21.0 : 16.0;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -1067,7 +1067,7 @@ class SocialButton extends StatelessWidget {
                             style: TextStyle(
                               color: textColor,
                               fontSize: fontSize,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -1094,7 +1094,7 @@ class GoogleLogoMark extends StatelessWidget {
     return FaIcon(
       FontAwesomeIcons.google,
       color: const Color(0xFF4285F4),
-      size: isTablet ? 40 : 22,
+      size: isTablet ? 34 : 22,
     );
   }
 }
@@ -1109,7 +1109,7 @@ class FacebookLogoMark extends StatelessWidget {
     return FaIcon(
       FontAwesomeIcons.facebook,
       color: const Color(0xFF1877F2),
-      size: isTablet ? 44 : 24,
+      size: isTablet ? 38 : 24,
     );
   }
 }

@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../core/app_theme.dart';
@@ -594,10 +597,19 @@ class ChatbotSheet extends StatefulWidget {
 }
 
 class _ChatbotSheetState extends State<ChatbotSheet> {
+  static const _cacheDuration = Duration(minutes: 30);
+  static const _cachePrefix = 'flowly_bot_chat_v1';
+
   final _controller = TextEditingController();
   final _messages = <_ChatMessage>[];
+  ScrollController? _scrollController;
   bool _didAddWelcomeMessage = false;
   bool _loading = false;
+
+  String get _cacheKey {
+    final userId = widget.repository.currentUser?.id ?? 'guest';
+    return '$_cachePrefix:$userId';
+  }
 
   @override
   void didChangeDependencies() {
@@ -608,12 +620,94 @@ class _ChatbotSheetState extends State<ChatbotSheet> {
     final strings = FlowlyStringsScope.of(context).strings;
     _messages.add(_ChatMessage(text: strings.botWelcome, isUser: false));
     _didAddWelcomeMessage = true;
+    _restoreCachedMessages(strings);
   }
 
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  Future<void> _restoreCachedMessages(AppStrings strings) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_cacheKey);
+
+    if (raw == null || raw.isEmpty) {
+      await _saveMessages();
+      _scrollToBottom(jump: true);
+      return;
+    }
+
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map<String, dynamic>) return;
+
+      final savedAt = DateTime.fromMillisecondsSinceEpoch(
+        decoded['saved_at'] as int? ?? 0,
+      );
+      if (DateTime.now().difference(savedAt) > _cacheDuration) {
+        await prefs.remove(_cacheKey);
+        if (mounted) {
+          setState(() {
+            _messages
+              ..clear()
+              ..add(_ChatMessage(text: strings.botWelcome, isUser: false));
+          });
+          await _saveMessages();
+          _scrollToBottom(jump: true);
+        }
+        return;
+      }
+
+      final rawMessages = decoded['messages'] as List<dynamic>? ?? [];
+      final restored = rawMessages
+          .whereType<Map<String, dynamic>>()
+          .map(_ChatMessage.fromJson)
+          .where((message) => message.text.trim().isNotEmpty)
+          .toList();
+
+      if (!mounted || restored.isEmpty) return;
+
+      setState(() {
+        _messages
+          ..clear()
+          ..addAll(restored);
+      });
+      _scrollToBottom(jump: true);
+    } catch (_) {
+      await prefs.remove(_cacheKey);
+    }
+  }
+
+  Future<void> _saveMessages() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      _cacheKey,
+      jsonEncode({
+        'saved_at': DateTime.now().millisecondsSinceEpoch,
+        'messages': _messages.map((message) => message.toJson()).toList(),
+      }),
+    );
+  }
+
+  void _scrollToBottom({bool jump = false}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final controller = _scrollController;
+      if (!mounted || controller == null || !controller.hasClients) return;
+
+      final target = controller.position.maxScrollExtent;
+      if (jump) {
+        controller.jumpTo(target);
+        return;
+      }
+
+      controller.animateTo(
+        target,
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+      );
+    });
   }
 
   Future<void> _submit() async {
@@ -631,18 +725,26 @@ class _ChatbotSheetState extends State<ChatbotSheet> {
       _controller.clear();
       _loading = true;
     });
+    _scrollToBottom();
 
     try {
-      final created = await widget.repository.createFromAi(text, widget.page);
+      final response = await widget.repository.chatWithAi(text, widget.page);
+      final reply = response.reply.isNotEmpty
+          ? response.reply
+          : response.created.isEmpty
+          ? 'Mình nghe đây. Bạn muốn mình hỗ trợ gì tiếp?'
+          : 'Đã thêm ${response.created.length} mục vào Flowly.';
       setState(() {
         _messages[_messages.length - 1] = _ChatMessage(
-          text: created.isEmpty
-              ? 'Mình chưa nhận ra nội dung cần tạo.'
-              : 'Đã thêm ${created.length} mục vào Flowly.',
+          text: reply,
           isUser: false,
         );
       });
-      widget.onCreated();
+      await _saveMessages();
+      _scrollToBottom();
+      if (response.created.isNotEmpty) {
+        widget.onCreated();
+      }
     } catch (error) {
       setState(() {
         _messages[_messages.length - 1] = _ChatMessage(
@@ -650,6 +752,8 @@ class _ChatbotSheetState extends State<ChatbotSheet> {
           isUser: false,
         );
       });
+      await _saveMessages();
+      _scrollToBottom();
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -658,6 +762,10 @@ class _ChatbotSheetState extends State<ChatbotSheet> {
   @override
   Widget build(BuildContext context) {
     final strings = FlowlyStringsScope.of(context).strings;
+    final size = MediaQuery.sizeOf(context);
+    final isTablet = size.shortestSide >= 600;
+    final chatFontSize = isTablet ? 17.0 : 15.5;
+    final chatMaxWidth = isTablet ? 460.0 : 320.0;
     final bottom = MediaQuery.viewInsetsOf(context).bottom;
 
     return Padding(
@@ -668,6 +776,7 @@ class _ChatbotSheetState extends State<ChatbotSheet> {
         minChildSize: 0.45,
         maxChildSize: 0.92,
         builder: (context, scrollController) {
+          _scrollController = scrollController;
           return FlowlyGlass(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
             tint: Colors.white.withValues(alpha: 0.86),
@@ -721,7 +830,7 @@ class _ChatbotSheetState extends State<ChatbotSheet> {
                             ? Alignment.centerRight
                             : Alignment.centerLeft,
                         child: Container(
-                          constraints: const BoxConstraints(maxWidth: 320),
+                          constraints: BoxConstraints(maxWidth: chatMaxWidth),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 14,
                             vertical: 11,
@@ -750,6 +859,8 @@ class _ChatbotSheetState extends State<ChatbotSheet> {
                               color: message.isUser
                                   ? Colors.white
                                   : FlowlyColors.text,
+                              fontSize: chatFontSize,
+                              height: 1.28,
                             ),
                           ),
                         ),
@@ -768,8 +879,13 @@ class _ChatbotSheetState extends State<ChatbotSheet> {
                           controller: _controller,
                           minLines: 1,
                           maxLines: 3,
+                          style: TextStyle(fontSize: chatFontSize),
                           decoration: InputDecoration(
                             hintText: strings.botPlaceholder,
+                            hintStyle: TextStyle(
+                              fontSize: chatFontSize,
+                              color: FlowlyColors.muted.withValues(alpha: 0.72),
+                            ),
                             filled: true,
                             fillColor: Colors.white.withValues(alpha: 0.82),
                             contentPadding: const EdgeInsets.symmetric(
@@ -828,8 +944,19 @@ class _ChatbotSheetState extends State<ChatbotSheet> {
 class _ChatMessage {
   const _ChatMessage({required this.text, required this.isUser});
 
+  factory _ChatMessage.fromJson(Map<String, dynamic> json) {
+    return _ChatMessage(
+      text: json['text'] as String? ?? '',
+      isUser: json['is_user'] as bool? ?? false,
+    );
+  }
+
   final String text;
   final bool isUser;
+
+  Map<String, dynamic> toJson() {
+    return {'text': text, 'is_user': isUser};
+  }
 }
 
 Future<void> showAccountSheet(

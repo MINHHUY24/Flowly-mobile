@@ -6,6 +6,13 @@ import 'api_client.dart';
 import 'app_config.dart';
 import 'flowly_dates.dart';
 
+class FlowlyBotResponse {
+  const FlowlyBotResponse({required this.reply, required this.created});
+
+  final String reply;
+  final List<Object> created;
+}
+
 class FlowlyRepository {
   FlowlyRepository({required AppConfig config})
     : _api = ApiClient(config: config);
@@ -77,8 +84,28 @@ class FlowlyRepository {
     return result['result'] as Map<String, dynamic>? ?? {};
   }
 
+  Future<FlowlyBotResponse> chatWithAi(String message, String page) async {
+    final response = await _api.post('/api/ai/parse', {
+      'message': message,
+      'page': page,
+      'path': '/$page',
+    });
+    final result = response['result'] as Map<String, dynamic>? ?? {};
+    final created = await _createFromAiResult(result, page);
+    final reply = (response['reply'] as String? ?? '').trim();
+
+    return FlowlyBotResponse(reply: reply, created: created);
+  }
+
   Future<List<Object>> createFromAi(String message, String page) async {
-    final result = await parseAi(message, page);
+    final response = await chatWithAi(message, page);
+    return response.created;
+  }
+
+  Future<List<Object>> _createFromAiResult(
+    Map<String, dynamic> result,
+    String page,
+  ) async {
     final items = result['items'] as List<dynamic>? ?? [];
     final type = result['type'] as String? ?? page;
     final created = <Object>[];

@@ -92,11 +92,11 @@ class AppStrings {
       isEnglish ? 'No schedule yet' : 'Chưa có lịch trình';
   String get flowlyBot => 'Flowly Bot';
   String get botPlaceholder => isEnglish
-      ? 'Example: I need to study and go to a meeting today'
-      : 'Ví dụ: Hôm nay tôi cần làm: học bài, đi họp';
+      ? 'Ask, plan, or create a task...'
+      : 'Hỏi, tư vấn, kiểm tra lịch hoặc tạo việc...';
   String get botWelcome => isEnglish
-      ? 'Hi, I can create tasks or schedules from your text.'
-      : 'Xin chào, mình có thể tạo task hoặc lịch từ câu bạn nhập.';
+      ? 'Hi, I can chat, advise, check your schedule, and create tasks or events.'
+      : 'Xin chào, mình có thể trò chuyện, tư vấn, kiểm tra lịch và tạo task/lịch cho bạn.';
   String get botThinking =>
       isEnglish ? 'Reading your request' : 'Mình đang đọc yêu cầu của bạn';
   String get profileName => isEnglish ? 'Name' : 'Tên';
